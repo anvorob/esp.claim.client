@@ -103,6 +103,7 @@ class App extends Component
     if(this.state.jobs.length>0)
       JobList = this.state.jobs.map(job=><Tile key={job.ID} title={job.Name} type="job" />)
       
+      
     return (
       <div className="Body">
         <div className="Header"></div>
