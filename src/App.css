@@ -2,15 +2,33 @@
   text-align: center;
 }
 
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 40vmin;
-  pointer-events: none;
-}
+.tile {
+  position: relative;
+  width: 200px;
+  height: 100px;
+  /*background: #eee;*/
+  color: #000;
+  padding: 20px; 
+  float: left;
+  margin: 5px;
 
-.App-header {
+  -webkit-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
+}
+.worker {
+  background: #94db12;
+}
+.workType {
+  background: #cbdb12;
+}
+.job {
+  background: #db9712;
+}
+.Header {
   background-color: #282c34;
-  min-height: 100vh;
+  min-height: 5vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -19,10 +37,24 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.panel {  
+  width: 30%;
+  float: left;
+
 }
 
+
+/* .hoveredTile{
+  background-color: blue;
+  width: 100px;
+  height: 100px;
+} */
+.hoveredTile{
+  background-color: grey;
+  color:whitesmoke;
+  /* width: 150px;
+  height: 150px; */
+}
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
