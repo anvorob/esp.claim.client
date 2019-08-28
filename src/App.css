@@ -17,6 +17,28 @@
   -o-transition: all 0.5s ease;
   transition: all 0.5s ease;
 }
+
+.workers-content{
+  width: 100%;
+  float: left;
+}
+.workers-content-past{
+  width: 20%;
+  float: left;
+}
+.workTypes-content{
+  width: 80%;
+  float: left;
+}
+.workTypes-content-past{
+  width: 10%;
+  float: left;
+}
+.jobs-content{
+  width: 70%;
+  float: left;
+}
+
 .worker {
   background: #94db12;
 }
@@ -25,6 +47,35 @@
 }
 .job {
   background: #db9712;
+}
+
+.worker-past.tile{
+  width:100px;
+  height:30px;
+  background: #7e9e43;
+}
+.worker-past.tile.active{
+  background: #94db12;
+}
+
+
+.workType-past.tile{
+  width:100px;
+  height:30px;
+  background: #828a32;
+}
+.workType-past.tile.active{
+  background: #cbdb12;
+}
+
+
+.jobs-past.tile{
+  width:100px;
+  height:30px;
+  background: #db9712;
+}
+.jobs-past.tile.active{
+  background: #cbdb12;
 }
 .Header {
   background-color: #282c34;
@@ -52,6 +103,7 @@
 .hoveredTile{
   background-color: grey;
   color:whitesmoke;
+  cursor: pointer;
   /* width: 150px;
   height: 150px; */
 }
