@@ -14,6 +14,7 @@ class App extends Component
   {
       super()
       this.state={
+          loading:false,
           modalIsOpen:false,
           workers:{
             selectedID:0,
@@ -43,7 +44,9 @@ class App extends Component
         url: "http://localhost:52098/api/TaskType?oid="+workerID,
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        //data: "{ workerId: " + WorkerId + "}",
+        beforeSend:function(xhr ){
+          this.setState({loading:true})
+        }.bind(this),
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             alert("Error occured when log out validation was attempted.");
         },
@@ -70,6 +73,7 @@ class App extends Component
                   }
                 )
           this.setState({workTypes:{data:result,active:true}});
+          this.setState({loading:false})
       }.bind(this)
     });
   }
@@ -78,17 +82,17 @@ class App extends Component
     $.ajax({
         type: "GET",
         url: "http://localhost:52098/api/Task/" + workTypeCode,
-        //url: "../UP.WorkersTileList.aspx/LogininDuringLeave",
         contentType: "application/json; charset=utf-8",
         dataType: "json",
-        //data: "{ workerId: " + WorkerId + "}",
+        beforeSend:function(){
+          this.setState({loading:true})
+        }.bind(this),
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             alert("Error occured when log out validation was attempted.");
   
         },
         success: function (result) {
-          
-        this.setState(prevState=>{
+          this.setState(prevState=>{
             return{
               workTypes:{
                 data:prevState.workTypes.data,
@@ -99,30 +103,137 @@ class App extends Component
           }
         )
           this.setState({jobs:{data:result,active:true}});
+          this.setState({loading:false})
       }.bind(this)
     });
   }
+  loginLogout(workerId)
+  {
+    let selectedWorker = this.state.workers.data.find(worker=>worker.ID==workerId)
+    let url=selectedWorker.LoggedIn?selectedWorker.LogoutUrl :selectedWorker.LoginUrl
+    //let message = document.getElementById("loginTextField").value;
+    //console.log(message);
+    //console.log(url)
+      $.ajax({
+        type: "POST",
+        url: url,
+        contentType: "application/json; charset=utf-8",
+        //data:{message:message},
+        dataType: "json",
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            
+            console.log(XMLHttpRequest.responseJSON)
+            if(XMLHttpRequest.responseJSON.Message==="Late Log in, specify reason")
+            {
+              this.setState(prevState=>{
+                console.log(workerId)
+                return{ modalIsOpen:true,
+                        workers:
+                          {
+                            data:prevState.workers.data,
+                            active:true,
+                            selectedID:workerId
+                          }
+                }})
+            }
+            if(XMLHttpRequest.responseJSON.Message==="You are logging out early")
+            {
+              this.setState(prevState=>{
+                return{ modalIsOpen:true,
+                        workers:
+                          {
+                            data:prevState.workers.data,
+                            active:true,
+                            selectedID:workerId
+                          }
+                }})
+            }
+        }.bind(this),
+        success: function (result) {
+            console.log(this.state)
+              this.setState(prevState=>{
+                prevState.workers.data.find(worker=>worker.ID==workerId).LoggedIn=!prevState.workers.data.find(worker=>worker.ID==workerId).LoggedIn
+                  return{
+                    workers:{
+                      data:prevState.workers.data,
+                      active:true,
+                      selectedID:0
+                    }
+                  }
+                }
+              )
+              
+            }.bind(this)
+    });
+  }
+  claimItem() {
+    $.ajax({
+        method: "POST",
+        url: "http://localhost:52098/api/Task/Claim/",
+        data: { oid: 9, workTypeCode: "DO" },
+        context: document.body
+    }).done(function (data) {
+        alert(data);
+    });
+  }
+
   handleChange(event)
   {
     const {name,value,type,className,key} = event.target
     const dataType = event.target.getAttribute("data-Type");
     const dataID = event.target.getAttribute("data-id");
+    // console.log(className);
+    //console.log(dataID);
+    //console.log(type)
+    //Trigger this if login button clicked
+    if(type=="submit" && dataID!==null)
+    {
+      this.loginLogout(dataID);
+    }
     // Trigger this if worker tile clicked
-    if(dataType=="worker" && dataID!==""){
-      this.getTaskTypes(dataID)
-      this.setState(prevState=>{
-        return {
-          worker:{
-            data:prevState.workers.data,
-            active:prevState.workers.active,
-            selectedID:dataID
+    if(dataType=="worker" && dataID!==null)
+    {
+      if(this.state.workers.data.find(worker=>worker.ID==dataID).LoggedIn)
+      {
+        this.getTaskTypes(dataID)
+        this.setState(prevState=>{
+          return {
+            workers:{
+              data:prevState.workers.data,
+              active:prevState.workers.active,
+              selectedID:dataID
+            }
           }
-        }
-      })
+        })
+      }else{
+        alert("Log in first");
+        // Resetting all tiles to original position
+        this.setState(prevState=>{
+          return {
+            workers:{
+              data:prevState.workers.data,
+              active:true,
+              selectedID:0
+            }
+          }
+        })
+        this.setState({
+            workTypes:{
+              data:[],
+              active:false,
+              selectedID:0
+            }})
+        this.setState({
+            jobs:{
+              data:[],
+              active:false,
+              selectedID:0
+            }})
+      }
     }
 
     //Trigger this if workType tile clicked
-    if(dataType=="workType" && dataID!==""){
+    if(dataType=="workType" && dataID!==null){
       this.getJobsForTaskType(dataID)
       this.setState(prevState=>{
         return {
@@ -136,7 +247,7 @@ class App extends Component
     }
 
     // Trigger this if job tile clicked
-    if(dataType=="job" && dataID!==""){
+    if(dataType=="job" && dataID!==null){
       this.setState({modalIsOpen:true})
       this.setState(prevState=>{
         return {
@@ -155,7 +266,6 @@ class App extends Component
       url: "http://localhost:52098/api/Employee",
       contentType: "application/json; charset=utf-8",
       dataType: "json",
-      //data: "{ workerId: " + WorkerId + "}",
       error: function (XMLHttpRequest, textStatus, errorThrown) {
           alert("Error occured when log out validation was attempted.");
 
@@ -172,6 +282,7 @@ class App extends Component
     var WorkTypesList = []
     var JobList = []
     let SelectedJob={}
+    
     if(this.state.workers.data!==null)
       WorkersList = this.state.workers.data.map(worker=><Tile key={worker.ID} 
                                                           handleChange={this.handleChange} 
@@ -180,6 +291,7 @@ class App extends Component
                                                           selectedID={this.state.workers.selectedID}
                                                           id={worker.ID}
                                                           active={this.state.workers.active}
+                                                          loggedin={worker.LoggedIn}
                                                           />)
     if(this.state.workTypes.data!==null)
       WorkTypesList = this.state.workTypes.data.map(workType=><Tile key={workType.ID} 
@@ -213,28 +325,33 @@ class App extends Component
             <div className={this.state.workTypes.active?"workTypes-content":"workTypes-content-past"}>{WorkTypesList}</div>
             <div className="jobs-content">{JobList}</div>
           </div>
-          <Dialog isOpen={this.state.modalIsOpen} onClose={(e)=>this.setState({modalIsOpen:false})}>
-              <ClaimForm workerID={this.state.workers.selectedID} workType={this.state.workTypes.selectedID} {...SelectedJob}/>
-            </Dialog>
+          <div className={"loader-box"+(this.state.loading?" loader-box-active":"")}>
+            <div className="loader"></div>
+          </div>
+
+          {/* Dont render if modal dialog is not being called */}
+          {(this.state.modalIsOpen)?
+            <Dialog isOpen={this.state.modalIsOpen} onClose={(e)=>this.setState({modalIsOpen:false})}>
+              {
+                (this.state.jobs.active)?
+                    <ClaimForm workerID={this.state.workers.selectedID} workType={this.state.workTypes.selectedID} {...SelectedJob}/>:
+                    <div>
+                      <table>
+                        <tbody>
+                          <tr><td colSpan="2"><h3>You logged in late</h3></td></tr>
+                          <tr><td valign="top">Reason for late login:</td><td><textarea rows="4" id="loginTextField"></textarea></td></tr>
+                          <tr><td colSpan="2" align="right"><button data-id={this.state.workers.selectedID} onClick={this.handleChange}>OK</button><button onClick={(e)=>this.setState({modalIsOpen:false})}>Cancel</button></td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+              }
+              </Dialog>
+            :""}
         <div className="Footer"></div>
       </div>
     );
   }
 }
 
-
-
-
-
-function ClaimItem() {
-  $.ajax({
-      method: "POST",
-      url: "http://localhost:52098/api/Task/Claim/",
-      data: { oid: 9, workTypeCode: "DO" },
-      context: document.body
-  }).done(function (data) {
-      alert(data);
-  });
-}
 
 export default App;
