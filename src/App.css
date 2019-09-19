@@ -2,6 +2,17 @@
   text-align: center;
 }
 
+.Content
+{
+  display: flow-root;
+    background: #e7e9eb;
+}
+
+.logo
+{
+    position: absolute;
+    left: 4px;
+}
 .tile {
   position: relative;
   width: 200px;
@@ -11,7 +22,7 @@
   padding: 20px; 
   float: left;
   margin: 5px;
-
+  font-weight: bold;
   -webkit-transition: all 0.5s ease;
   -moz-transition: all 0.5s ease;
   -o-transition: all 0.5s ease;
@@ -42,48 +53,48 @@
 }
 
 .worker {
-  background: #94db12;
+  background: #f2bb13;
   font-size: 24px;
 }
 .workType {
-  background: #cbdb12;
+  background: #f2bb13;
 }
 .job {
-  background: #db9712;
+  background: #f2bb13;
 }
 
 .loggedOut{
   margin: 5px;
   display: inline-block;
-  background: repeating-linear-gradient( -45deg, #94db12 2px, #7e9e43 3px, #7e9e43 4px, #94db12 7px);
+  background: repeating-linear-gradient( -45deg, #f2bb13 2px, #96740d 3px, #96740d 4px, #f2bb13 7px);
 }
 .worker-past.tile{
   width:100px;
   height:30px;
-  background: #7e9e43;
+  background: #96740d;
 }
 .worker-past.tile.active{
-  background: #94db12;
+  background: #f2bb13;
 }
 
 
 .workType-past.tile{
   width:100px;
   height:30px;
-  background: #828a32;
+  background: #96740d;
 }
 .workType-past.tile.active{
-  background: #cbdb12;
+  background: #f2bb13;
 }
 
 
 .jobs-past.tile{
   width:100px;
   height:30px;
-  background: #db9712;
+  background: #f2bb13;
 }
 .jobs-past.tile.active{
-  background: #cbdb12;
+  background: #f2bb13;
 }
 .Header {
   background-color: #282c34;
@@ -101,8 +112,24 @@
   float: left;
 
 }
+.header-title
+{
+  font-style: italic;
+  margin: 10px;
+}
 
-
+.logBtn
+{
+    padding: 6px;
+    background: #252e38;
+    border: 0px;
+    color: #fff;
+    font-size: 15px;
+    margin:5px;
+}
+.logBtn:hover{
+  cursor: pointer;
+}
 /* .hoveredTile{
   background-color: blue;
   width: 100px;
@@ -123,7 +150,7 @@
 {
   display: none;
   position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
+  z-index: 999; /* Sit on top */
   left: 0;
   top: 0;
   width: 100%; /* Full width */
@@ -146,6 +173,9 @@
   -webkit-animation: spin 2s linear infinite;
   animation: spin 2s linear infinite;
   
+}
+.progress{
+  margin-top: 10px;
 }
 
 @keyframes spin {

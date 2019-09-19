@@ -1,5 +1,7 @@
 import React,{Component} from "react"
 import ProgressBar from  'react-bootstrap/ProgressBar';
+import { Slider, Rail, Handles, Tracks, Ticks } from 'react-compound-slider'
+import {Handle, Tick,Track} from './SliderComp.js'
 
 class Tile extends Component {
     constructor(){
@@ -8,8 +10,9 @@ class Tile extends Component {
             hover:false
         }
         this.hoverOn = this.hoverOn.bind(this)  
-        this.hoverOff = this.hoverOff.bind(this)  
-         
+        this.hoverOff = this.hoverOff.bind(this) 
+        this.progressUpdateInternal=this.progressUpdateInternal.bind(this)
+        
     }
     hoverOn(){
         this.setState({ hover: true });
@@ -17,10 +20,30 @@ class Tile extends Component {
     hoverOff(){ 
         this.setState({ hover: false });    
       }
+      progressUpdateInternal(newValue,jobCode,workTypeCode,callbackMethod){
+        callbackMethod(newValue[0],jobCode,workTypeCode)
+      }
+      
     render(){
+        
+        const sliderStyle = {  // Give the slider some width
+            position: 'relative',
+            width: '100%',
+            height: 40,
+            marginTop:'10px'
+          }
+          
+          const railStyle = { 
+            position: 'absolute',
+            width: '100%',
+            height: 10,
+            marginTop: 15,
+            borderRadius: 3,
+            backgroundColor: '#252e38',
+          }
         return(
             <div className={"tile "+((this.props.active)?this.props.type:this.props.type+"-past") + 
-                    (this.state.hover===true?" hoveredTile":"") +  
+                    (this.state.hover===true || this.props.jobToBeClaimed?" hoveredTile":"") +  
                     (this.props.selectedID+""===this.props.id+""?" active":"")+
                     ((this.props.loggedin || this.props.type!=="worker")?"":" loggedOut")} 
                     onMouseOver={this.hoverOn} 
@@ -30,9 +53,36 @@ class Tile extends Component {
                     onClick={this.props.handleChange}>
                         
                 {(this.props.type==="job")?"("+this.props.code+") "+this.props.title:this.props.title}
-                {(this.props.type==="job")?<ProgressBar animated now={this.props.progress} />:""}
+                {(this.props.type==="job")?<Slider rootStyle={sliderStyle} domain={[0, 100]} step={1} mode={3} values={[this.props.progress]} onSlideEnd={(e)=>this.progressUpdateInternal(e,this.props.code,0,this.props.progressUpdate)} >
+                                            <div style={railStyle} />
+                                            <Handles>
+                                            {({ handles, getHandleProps }) => (
+                                                <div className="slider-handles">
+                                                {handles.map(handle => (
+                                                    <Handle
+                                                    key={handle.id}
+                                                    handle={handle}
+                                                    getHandleProps={getHandleProps}
+                                                    />
+                                                ))}
+                                                </div>
+                                            )}
+                                            </Handles><Tracks right={false}>
+                                                {({ tracks, getTrackProps }) => (
+                                                <div className="slider-tracks">
+                                                    {tracks.map(({ id, source, target }) => (
+                                                    <Track
+                                                        key={id}
+                                                        source={source}
+                                                        target={target}
+                                                        getTrackProps={getTrackProps}
+                                                    />
+                                                    ))}
+                                                </div>
+                                                )}
+                                            </Tracks></Slider>:""}
                 <br/>
-                {(this.props.type==="worker" && this.props.active)?<button data-id={this.props.id}  >{((this.props.loggedin)?"Log out":"Log in")}</button>:""}
+                {(this.props.type==="worker" && this.props.active)?<button className="logBtn" data-id={this.props.id}  >{((this.props.loggedin)?"Log out":"Log in")}</button>:""}
             </div>
         )
     }
