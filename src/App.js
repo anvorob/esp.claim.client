@@ -9,6 +9,7 @@ import Notification from "./Notification"
 import ClaimForm from './ClaimForm'
 import './bootstrap1.css';
 import jsonFile from "./data.json"
+import { isNullOrUndefined } from 'util';
 
 
 class App extends Component 
@@ -136,7 +137,7 @@ class App extends Component
           
           this.setState(prevState=>{
             let oldJobs = prevState.jobs.data;
-            
+            this.cancelClaim()
             oldJobs.find(job=>job.ID==SelectedJob).TaskItems = result.TaskItems;
             return{
               jobs:{
@@ -170,11 +171,11 @@ class App extends Component
         dataType: "json",
         error: function (XMLHttpRequest, textStatus, errorThrown) 
         {    
-            console.log(XMLHttpRequest.responseJSON)
+            
             if(XMLHttpRequest.responseJSON.Message==="Late Log in, specify reason")
             {
               this.setState(prevState=>{
-                console.log(workerId)
+                
                 return{ modalIsOpen:true,
                         workers:
                           {
@@ -198,7 +199,7 @@ class App extends Component
             }
         }.bind(this),
         success: function (result) {
-            console.log(this.state)
+            
               this.setState(prevState=>{
                 prevState.workers.data.find(worker=>worker.ID==workerId).LoggedIn=!prevState.workers.data.find(worker=>worker.ID==workerId).LoggedIn
                   return{
@@ -226,6 +227,7 @@ class App extends Component
       jobItemList:jobItemsToClaim
     }
 
+    
     $.ajax({
         type: "POST",
         contentType: "application/json; charset=utf-8",
@@ -235,11 +237,32 @@ class App extends Component
         context: document.body
     }).done(function (data) {
         alert("Claimed");
-        console.log(data);
+        if(claimAndExit)        
+        this.setState(prevState=>{
+          return{
+            workers:{data:prevState.workers.data,
+                    active:true,
+                    selectedID:0},
+            loading:false,
+            modalIsOpen:false,
+            jobClaimOpen:false,
+            workTypes:{
+              selectedID:0,
+              active:false,
+              data:[]
+            },
+            jobs:{
+              selectedID:0,
+              active:false,
+              data:[]
+            }
+          }
+        })
     });
   }
 
-  claimJob(){
+  claimJob(claimAndExit){
+    
     let claimedJobs = this.state.jobs.data.filter(ti=>ti.hasOwnProperty("NewProgress"))
     let jobClaimObj = {
       worker:this.state.workers.selectedID,
@@ -256,7 +279,27 @@ class App extends Component
         context: document.body
     }).done(function (data) {
         alert("Claimed");
-        console.log(data)
+        if(claimAndExit)        
+        this.setState(prevState=>{
+          return{
+            workers:{data:prevState.workers.data,
+                    active:true,
+                    selectedID:0},
+            loading:false,
+            modalIsOpen:false,
+            jobClaimOpen:false,
+            workTypes:{
+              selectedID:0,
+              active:false,
+              data:[]
+            },
+            jobs:{
+              selectedID:0,
+              active:false,
+              data:[]
+            }
+          }
+        })
     });
   }
   progressUpdate(newValue,jobCode,workTypeID){
@@ -297,7 +340,7 @@ class App extends Component
           let np = prevState.jobs.data.find(job=>job.Code===jobCode).TaskItems.find(ti=>ti.ID===workTypeID).NewProgress
           if(pr>=np)
           {
-            console.log("Here");
+            
             delete prevState.jobs.data.find(job=>job.Code===jobCode).TaskItems.filter(function(ti){
               
               return delete ((ti.hasOwnProperty("NewProgress")&& ti.ID===workTypeID)?delete ti.NewProgress:ti)
@@ -315,7 +358,9 @@ class App extends Component
   cancelClaim(){
     this.setState(
       prevState=>{
-        prevState.jobs.data.filter(function(job){return delete (job.hasOwnProperty("NewProgress")?delete job.NewProgress:job)})
+        delete prevState.jobs.data.filter(function(job){
+          return delete (job.hasOwnProperty("NewProgress")?delete job.NewProgress:job)
+        })
        
       return {
         jobs:prevState.jobs,
@@ -326,13 +371,28 @@ class App extends Component
   }
   handleChange(event)
   {
-    const {type} = event.target
     const dataType = event.target.getAttribute("data-Type");
     const dataID = event.target.getAttribute("data-id");
     
-    console.log(event);
+   console.log(dataType)
+   console.log(dataID)
+    if(dataType==="jobclaim" && dataID!="")
+    {
+      this.setState(prevState=>{ 
+            delete prevState.jobs.data.filter(function(job)
+            {
+              return (job.ID==dataID && job.hasOwnProperty("NewProgress"))?delete job.NewProgress:job
+            }) 
+            console.log(prevState.jobs.data.filter(job=>job.hasOwnProperty("NewProgress")).length)
+            return {
+              jobs:prevState.jobs,
+              jobClaimOpen:(prevState.jobs.data.filter(job=>job.hasOwnProperty("NewProgress")).length>0)
+            }
+          })
+            
+    }
     //Trigger this if login button clicked
-    if(type=="submit" && dataID!==null)
+    if(dataType=="login" && dataID!==null)
     {
       this.loginLogout(dataID);
     }
@@ -377,6 +437,30 @@ class App extends Component
             }})
       }
     }
+    // Go back to worker selection
+    if(dataType=="worker" && dataID==null)
+    {
+      this.setState(prevState=>{
+        return {
+          workers:{
+            data:prevState.workers.data,
+            active:true,
+            selectedID:0
+          },
+          workTypes:{
+            data:[],
+            active:false,
+            selectedID:0
+          },
+          jobs:{
+            data:[],
+            active:false,
+            selectedID:0
+          }
+        }
+      })
+      
+    }
 
     //Trigger this if workType tile clicked
     if(dataType=="workType" && dataID!==null){
@@ -390,6 +474,24 @@ class App extends Component
           }
         }
       })
+    }
+
+    // Reset selected worktype
+    if(dataType=="workType" && dataID==null)
+    {
+      this.setState(prevState=>{
+        return {
+            workTypes:{
+              data:prevState.workTypes.data,
+              active:true,
+              selectedID:0
+            },
+            jobs:{
+              data:[],
+              active:false,
+              selectedID:0
+            }
+          }})
     }
 
     // Trigger this if job tile clicked
@@ -468,7 +570,13 @@ class App extends Component
                                                 jobToBeClaimed={job.hasOwnProperty("NewProgress")}
                                                 progress={(job.hasOwnProperty("NewProgress"))?job.NewProgress:job.Progress}
                                                 type="job" />)
-      
+     // get list of claiming jobs 
+    let jobList = this.state.jobs.data.filter(job=>job.hasOwnProperty("NewProgress")).map(singleJob=>{
+                                                  return <tr>
+                                                              <td><button onClick={this.handleChange} data-id={singleJob.ID}  data-type="jobclaim" >-</button></td>
+                                                              <td>{singleJob.Code}</td>
+                                                              <td>{singleJob.Progress +"% -> " +singleJob.NewProgress+"%"}</td>
+                                                              <td>{singleJob.Stage}</td></tr>})
       if(parseInt(this.state.jobs.selectedID)!==0){
         SelectedJob=this.state.jobs.data.find(job=>job.ID===parseInt(this.state.jobs.selectedID));
       }
@@ -478,17 +586,41 @@ class App extends Component
         <div className="Header">
           <img src={require('./apl_logo.jpg')} className='logo'/>
           {
+            
             (this.state.workers.active)?
             <h3 className="header-title">Workers</h3>:
             (this.state.workTypes.active)?
-            <h3 className="header-title">Work Types</h3>:
-            <h3 className="header-title">Jobs</h3>
+            <div><h5 className="header-title header-past"  data-type="worker" onClick={this.handleChange}>{this.state.workers.data.find(worker=>worker.ID==this.state.workers.selectedID).Name+"->"}</h5><h3 className="header-title">Work Types</h3></div>:
+            (!isNullOrUndefined(this.state.workTypes.data) && this.state.workTypes.data.length>0)?<div><h5 className="header-title header-past"  data-type="worker" onClick={this.handleChange}>{this.state.workers.data.find(worker=>worker.ID==this.state.workers.selectedID).Name+"->"}</h5><h5  data-type="workType" onClick={this.handleChange} className="header-title header-past">{this.state.workTypes.data.find(wt=>wt.Code==this.state.workTypes.selectedID).Title+"->"}</h5><h3 className="header-title">Jobs</h3></div>:<div></div>
+            // (this.state.workers.active)?
+            // <h3 className="header-title">Workers</h3>:
+            // (this.state.workTypes.active)?
+            // <h3 className="header-title">Work Types</h3>:
+            // <h3 className="header-title">Jobs</h3>
           }
         </div>
           <div className="Content">
             <div className={this.state.workers.active?"workers-content":"workers-content-past"}>{WorkersList}</div>
             <div className={this.state.workTypes.active?"workTypes-content":"workTypes-content-past"}>{WorkTypesList}</div>
-            <div className="jobs-content">{JobList}</div>
+            <div className={this.state.jobClaimOpen?"jobs-content":"jobs-content-wide"}>{JobList}</div>
+            <div className={this.state.jobClaimOpen?"jobClaim-content":"hidden"}>
+            <table>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Code</th>
+                            <th>New Percentage</th>
+                            <th>Stage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {jobList}
+                    </tbody>
+                </table>
+                <button className="logBtn"  onClick={()=>this.claimJob(false)}>Submit</button>
+                <button className="logBtn"  onClick={()=>this.claimJob(true)}>Submit & Exit</button>
+                <button className="logBtn"  onClick={()=>this.cancelClaim}>Cancel</button>
+              </div>
           </div>
           <div className={"loader-box"+(this.state.loading?" loader-box-active":"")}>
             <div className="loader"></div>
@@ -506,17 +638,17 @@ class App extends Component
                       <tbody>
                           <tr><td colSpan="2"><h3>You logged in late</h3></td></tr>
                           <tr><td valign="top">Reason for late login:</td><td><textarea rows="4" id="loginTextField"></textarea></td></tr>
-                          <tr><td colSpan="2" align="right"><button data-id={this.state.workers.selectedID} className="logBtn" onClick={this.handleChange}>OK</button><button className="logBtn" onClick={(e)=>this.setState({modalIsOpen:false})}>Cancel</button></td></tr>
+                          <tr><td colSpan="2" align="right"><button data-id={this.state.workers.selectedID} className="logBtn" data-type="login" onClick={this.handleChange}>OK</button><button className="logBtn" onClick={(e)=>this.setState({modalIsOpen:false})}>Cancel</button></td></tr>
                       </tbody>
                       </table>
                   </div>
               }
               </Dialog>
             :""}
-            {(this.state.jobClaimOpen)?
-              <Notification isOpen={this.state.jobClaimOpen} claimJob={this.claimJob} cancelClaim={this.cancelClaim} jobs={this.state.jobs}/>:
+            {/* {(this.state.jobClaimOpen)?
+              <Notification isOpen={this.state.jobClaimOpen} claimJob={this.claimJob} cancelClaim={this.cancelClaim} removeJobFromList={this.handleChange} jobs={this.state.jobs}/>:
               ""
-            }
+            } */}
         <div className="Footer"></div>
       </div>
     );

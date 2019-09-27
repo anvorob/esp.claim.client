@@ -30,37 +30,52 @@
 }
 
 .workers-content{
-  width: 100%;
-  float: left;
+  /* width: 100%;
+  float: left; */
+  margin-left: 30px;
 }
 .workers-content-past{
   width: 19%;
   float: left;
   border-right: 3px dashed burlywood;
+  display: none;
 }
 .workTypes-content{
-  width: 80%;
-  float: left;
+  /* width: 80%;
+  float: left; */
+  margin-left: 30px;
 }
 .workTypes-content-past{
   width: 9%;
   float: left;
   border-right: 3px dashed burlywood;
+  display: none;
 }
 .jobs-content{
-  width: 70%;
+  width: 80%;
+  float: left;
+  margin-left: 30px;
+}
+.jobs-content-wide{
+  width: 100%;
+  float: left;
+  margin-left: 30px;
+}
+.jobClaim-content{
   float: left;
 }
-
 .worker {
   background: #f2bb13;
+  border: 1px solid #8d8d8d;
   font-size: 24px;
 }
 .workType {
   background: #f2bb13;
+  border: 1px solid #8d8d8d;
 }
 .job {
   background: #f2bb13;
+  border: 1px solid #8d8d8d;
 }
 
 .loggedOut{
@@ -106,7 +121,10 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
-
+.hidden
+{
+  display: none;
+}
 .panel {  
   width: 30%;
   float: left;
@@ -116,8 +134,16 @@
 {
   font-style: italic;
   margin: 10px;
+  float: left;
 }
-
+.header-title.header-past{
+  margin-top: 20px;
+  cursor: pointer;
+  color: grey;
+}
+.header-past:hover{
+  color: white;
+}
 .logBtn
 {
     padding: 6px;

@@ -1,7 +1,6 @@
 import React,{Component} from "react"
-import ProgressBar from  'react-bootstrap/ProgressBar';
-import { Slider, Rail, Handles, Tracks, Ticks } from 'react-compound-slider'
-import {Handle, Tick,Track} from './SliderComp.js'
+import { Slider, Handles, Tracks } from 'react-compound-slider'
+import {Handle, Track} from './SliderComp.js'
 
 class Tile extends Component {
     constructor(){
@@ -41,11 +40,24 @@ class Tile extends Component {
             borderRadius: 3,
             backgroundColor: '#252e38',
           }
+          let classes =['title']
+          classes.push((this.props.active)?this.props.type:this.props.type+"-past") 
+          
+          (this.state.hover===true || this.props.jobToBeClaimed)
+          classes.push('hoveredTile')
+          
+          (this.props.selectedID+""===this.props.id+"")
+          classes.push('active')
+
+          (!this.props.loggedin && this.props.type==="worker")
+          classes.push('loggedOut')
+
+        //   className={"tile "+((this.props.active)?this.props.type:this.props.type+"-past") + 
+        //             (this.state.hover===true || this.props.jobToBeClaimed?" hoveredTile":"") +  
+        //             (this.props.selectedID+""===this.props.id+""?" active":"")+
+        //             ((this.props.loggedin || this.props.type!=="worker")?"":" loggedOut")} 
         return(
-            <div className={"tile "+((this.props.active)?this.props.type:this.props.type+"-past") + 
-                    (this.state.hover===true || this.props.jobToBeClaimed?" hoveredTile":"") +  
-                    (this.props.selectedID+""===this.props.id+""?" active":"")+
-                    ((this.props.loggedin || this.props.type!=="worker")?"":" loggedOut")} 
+            <div className={classes.join(' ')} 
                     onMouseOver={this.hoverOn} 
                     onMouseLeave={this.hoverOff} 
                     data-id={this.props.id}  
@@ -82,7 +94,7 @@ class Tile extends Component {
                                                 )}
                                             </Tracks></Slider>:""}
                 <br/>
-                {(this.props.type==="worker" && this.props.active)?<button className="logBtn" data-id={this.props.id}  >{((this.props.loggedin)?"Log out":"Log in")}</button>:""}
+                {(this.props.type==="worker" && this.props.active)?<button className="logBtn" data-type="login" data-id={this.props.id}  >{((this.props.loggedin)?"Log out":"Log in")}</button>:""}
             </div>
         )
     }

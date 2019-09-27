@@ -1,4 +1,4 @@
-import React,{Component} from "react"
+import React from "react"
 
 export function Handle({ // your handle component
     handle: { id, value, percent }, 
@@ -24,7 +24,7 @@ export function Handle({ // your handle component
         }}
         {...getHandleProps(id)}
       >
-        <div style={{ fontFamily: 'Roboto', fontSize: 11, marginTop: -15 }}>
+        <div style={{ fontFamily: 'Roboto', fontSize: 20, marginTop: -23 }}>
           {value}
         </div>
       </div>
